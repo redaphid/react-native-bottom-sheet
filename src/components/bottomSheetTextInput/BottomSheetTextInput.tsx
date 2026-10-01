@@ -31,10 +31,11 @@ const BottomSheetTextInputComponent = forwardRef<
   //#region callbacks
   const handleOnFocus = useCallback(
     (args: NativeSyntheticEvent<TextInputFocusEventData>) => {
-      animatedKeyboardState.set(state => ({
-        ...state,
-        target: args.nativeEvent.target,
-      }));
+      const target = args.nativeEvent.target;
+      animatedKeyboardState.modify(state => {
+        'worklet';
+        return { ...state, target };
+      });
       if (onFocus) {
         onFocus(args);
       }
@@ -60,10 +61,14 @@ const BottomSheetTextInputComponent = forwardRef<
         textInputNodesRef.current.has(currentFocusedInput);
 
       if (shouldRemoveCurrentTarget && !shouldIgnoreBlurEvent) {
-        animatedKeyboardState.set(state => ({
-          ...state,
-          target: undefined,
-        }));
+        const target = args.nativeEvent.target;
+        animatedKeyboardState.modify(state => {
+          'worklet';
+          if (state.target !== target) {
+            return state;
+          }
+          return { ...state, target: undefined };
+        });
       }
 
       if (onBlur) {
@@ -97,10 +102,13 @@ const BottomSheetTextInputComponent = forwardRef<
        * to the current component.
        */
       if (keyboardState.target === componentNode) {
-        animatedKeyboardState.set(state => ({
-          ...state,
-          target: undefined,
-        }));
+        animatedKeyboardState.modify(state => {
+          'worklet';
+          if (state.target !== componentNode) {
+            return state;
+          }
+          return { ...state, target: undefined };
+        });
       }
 
       if (textInputNodesRef.current.has(componentNode)) {
